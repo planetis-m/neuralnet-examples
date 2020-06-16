@@ -9,6 +9,16 @@ proc loss(y, t: float): float {.inline.} =
    result = t * ln(y) + (1.0 - t) * ln(1.0 - y)
 makeUniversalBinary(loss)
 
+proc predict[T](W1, b1, W2: Matrix[T], b2: T, X: Matrix[T]): Matrix[T] =
+   let
+      # LAYER 1
+      Z1 = X * W1 + RowVector64(b1)
+      A1 = sigmoid(Z1)
+      # LAYER 2
+      Z2 = A1 * W2 + b2
+      A2 = sigmoid(Z2)
+   result = A2
+
 proc main =
    const
       m = 4 # batch length
@@ -33,6 +43,8 @@ proc main =
          # LAYER 2
          Z2 = A1 * W2 + b2 # scalar to (m, 1)
          A2 = sigmoid(Z2)
+      # Cross Entropy
+      let loss = -sum(loss(A2, Y)) / m.float
       # Back Prop
       let
          # LAYER 2
@@ -50,11 +62,9 @@ proc main =
       # LAYER 1
       W1 -= rate * dW1
       b1 -= rate * db1
-      # Cross Entropy
-      let loss = -sum(loss(A2, Y)) / m.float
       if i mod 250 == 0:
          echo(" Iteration ", i, ":")
          echo("   Loss = ", formatEng(loss))
-         echo("   Predictions =\n", A2)
+         echo("   Predictions =\n", predict(W1, b1, W2, b2, X))
 
 main()

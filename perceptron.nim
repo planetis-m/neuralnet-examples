@@ -9,9 +9,9 @@ proc heaviside(s: float): float {.inline.} =
    result = if s >= 0: 1 else: -1
 makeUniversal(heaviside)
 
-proc loss(y, t: float): float {.inline.} =
-   result = 0.5 * (y - t) * (y - t)
-makeUniversalBinary(loss)
+proc hinge(y, t: float): float {.inline.} =
+   result = max(0, 1 - t * y)
+makeUniversalBinary(hinge)
 
 proc predict(s: float): float {.inline.} =
    result = if s >= 0: 1 else: 0
@@ -39,6 +39,8 @@ proc main =
       let
          Z = X * W + b
          A = heaviside(Z)
+      # Cross Entropy
+      let loss = sum(hinge(A, Y)) / m.float
       # Back Prop
       let
          dZ = A - Y
@@ -47,7 +49,6 @@ proc main =
       # Gradient Descent
       W -= rate * dW
       b -= rate * db
-      let loss = sum(loss(A, Y)) / m.float
       if i mod 5 == 0:
          echo(" Iteration ", i, ":")
          echo("   Loss = ", formatEng(loss))

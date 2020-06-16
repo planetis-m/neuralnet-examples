@@ -1,5 +1,5 @@
 # Copyright (c) 2019 Antonis Geralis
-import math, strutils, manu / matrix
+import math, strutils, manu/matrix
 {.passC: "-march=native -ffast-math".}
 
 proc sigmoid(s: float): float {.inline.} =
@@ -9,6 +9,16 @@ makeUniversal(sigmoid)
 proc loss(y, t: float): float {.inline.} =
    result = t * ln(y) + (1.0 - t) * ln(1.0 - y)
 makeUniversalBinary(loss)
+
+proc predict[T](W1, b1, W2: Matrix[T], b2: T, X: Matrix[T]): Matrix[T] =
+   let
+      # LAYER 1
+      Z1 = X * W1 + RowVector64(b1)
+      A1 = sigmoid(Z1)
+      # LAYER 2
+      Z2 = A1 * W2 + b2
+      A2 = sigmoid(Z2)
+   result = A2
 
 template zerosLike[T](a: Matrix[T]): Matrix[T] = matrix[T](a.m, a.n)
 
@@ -40,6 +50,8 @@ proc main =
          # LAYER 2
          Z2 = A1 * W2 + b2
          A2 = sigmoid(Z2)
+      # Cross Entropy
+      let loss = -sum(loss(A2, Y)) / m.float
       # Back Prop
       let
          # LAYER 2
@@ -62,11 +74,9 @@ proc main =
       # LAYER 2
       W2 += Ms[2]
       b2 += Ms[3]
-      # Cross Entropy
-      let loss = -sum(loss(A2, Y)) / m.float
       if i mod 250 == 0:
          echo(" Iteration ", i, ":")
          echo("   Loss = ", formatEng(loss))
-         echo("   Predictions =\n", A2)
+         echo("   Predictions =\n", predict(W1, b1, W2, b2, X))
 
 main()

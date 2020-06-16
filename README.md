@@ -12,7 +12,7 @@ function. Done for comparison.
 ### 1. [perceptron](perceptron.nim)
 The [perceptron](https://en.wikipedia.org/wiki/Perceptron) algorithm.
 The activation function is a binary step function called "heaviside step
-function". Mean squared error as a loss function. Capable of binary
+function". Hinge loss as a loss function. Capable of binary
 classification. The example functions as an OR gate.
 
 ```json
@@ -45,8 +45,8 @@ speed and accuracy (avoid getting stuck in a local minima). XOR gate
 ```
 
 ### 4. [exseimion](exseimion.nim)
+Handwritten digit classification is a multi-label classification problem.
 The data set used is [semeion.data](http://archive.ics.uci.edu/ml/machine-learning-databases/semeion/semeion.data).
-Predicts hand written digits.
 
 ```json
 {

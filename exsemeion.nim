@@ -68,6 +68,8 @@ proc main =
          # LAYER 2
          Z2 = A1 * W2 + RowVector64(b2)
          A2 = exp(Z2) /. ColVector64(sumRows(exp(Z2)))
+      # Cross Entropy
+      let loss = -sum(ln(A2) *. Y)
       # Back Prop
       let
          # LAYER 2
@@ -90,8 +92,6 @@ proc main =
       # LAYER 2
       W2 += Ms[2]
       b2 += Ms[3]
-      # Cross Entropy
-      let loss = -sum(ln(A2) *. Y)
       if i mod 500 == 0:
          echo(" Iteration ", i, ":")
          echo("   Loss = ", formatEng(loss))
