@@ -19,6 +19,7 @@ makeUniversal(predict)
 
 proc predict[T](W: Matrix[T], b: T, X: Matrix[T]): Matrix[T] =
    let
+      # Foward Prop
       Z = X * W + b
       A = predict(Z)
    result = A
@@ -26,7 +27,7 @@ proc predict[T](W: Matrix[T], b: T, X: Matrix[T]): Matrix[T] =
 proc main =
    const
       m = 4
-      epochs = 30
+      epochs = 40
       rate = 0.01
    let
       X = matrix(2, @[0.0, 0, 0, 1, 1, 0, 1, 1])
@@ -35,20 +36,20 @@ proc main =
       W = randMatrix(2, 1, -1.0..1.0)
       b = 0.0
    for i in 1 .. epochs:
-      # Foward Prop
       let
+         # Foward Prop
          Z = X * W + b
          A = heaviside(Z)
-      # Cross Entropy
-      let loss = sum(hinge(A, Y)) / m.float
-      # Back Prop
-      let
+         # Cross Entropy
+         loss = sum(hinge(A, Y)) / m.float
+         # Back Prop
          dZ = A - Y
          db = sum(dZ)
          dW = X.transpose * dZ
       # Gradient Descent
       W -= rate * dW
       b -= rate * db
+      # Print progress
       if i mod 5 == 0:
          echo(" Iteration ", i, ":")
          echo("   Loss = ", formatEng(loss))

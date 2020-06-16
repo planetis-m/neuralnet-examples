@@ -12,6 +12,7 @@ makeUniversalBinary(loss)
 
 proc predict[T](W1, b1, W2: Matrix[T], b2: T, X: Matrix[T]): Matrix[T] =
    let
+      # Foward Prop
       # LAYER 1
       Z1 = X * W1 + RowVector64(b1)
       A1 = sigmoid(Z1)
@@ -42,18 +43,17 @@ proc main =
       # MOMENTUMS
       Ms = (zerosLike(W1), zerosLike(b1), zerosLike(W2), 0.0)
    for i in 1 .. epochs:
-      # Foward Prop
       let
+         # Foward Prop
          # LAYER 1
          Z1 = X * W1 + RowVector64(b1)
          A1 = sigmoid(Z1)
          # LAYER 2
          Z2 = A1 * W2 + b2
          A2 = sigmoid(Z2)
-      # Cross Entropy
-      let loss = -sum(loss(A2, Y)) / m.float
-      # Back Prop
-      let
+         # Cross Entropy
+         loss = -sum(loss(A2, Y)) / m.float
+         # Back Prop
          # LAYER 2
          dZ2 = A2 - Y
          db2 = sum(dZ2)
@@ -74,6 +74,7 @@ proc main =
       # LAYER 2
       W2 += Ms[2]
       b2 += Ms[3]
+      # Print progress
       if i mod 250 == 0:
          echo(" Iteration ", i, ":")
          echo("   Loss = ", formatEng(loss))

@@ -7,7 +7,7 @@ type
       input: array[256, float]
       target: array[10, float]
 
-proc readData: (Matrix, Matrix) =
+proc readData: (Matrix[float], Matrix[float]) =
    var
       inputs: seq[float]
       targets: seq[float]
@@ -37,24 +37,16 @@ proc predict[T](W1, b1, W2, b2, X: Matrix[T]): Matrix[T] =
 
 template zerosLike[T](a: Matrix[T]): Matrix[T] = matrix[T](a.m, a.n)
 
-proc toBatches(len, batchLen: int): seq[Slice[int]] =
+iterator batches[T](X, Y: Matrix[T], len, batchLen: int): (Matrix[T], Matrix[T]) =
    let n = if batchLen != 0: len div batchLen else: 0
    assert batchLen * n == len
-   result = newSeq[Slice[int]](n)
-   var j = 0
-   for i in 0 ..< result.len:
-      result[i].a = j
-      j += batchLen
-      result[i].b = j - 1
-
-iterator batches[T](X, Y: Matrix[T], len, batchLen: int): (Matrix[T], Matrix[T]) =
-   var batches = toBatches(len, batchLen)
-   while batches.len > 0:
-      let
-         j = rand(0..<batches.len)
-         rows = batches[j]
+   var batches = newSeq[int16](len)
+   for i in 0..<len:
+      batches[i] = i.int16
+   shuffle(batches)
+   for k in countup(0, len, batchLen):
+      let rows = batches[k ..< k + batchLen]
       yield (X[rows, 0..^1], Y[rows, 0..^1])
-      batches.del(j)
 
 proc main =
    const
@@ -70,10 +62,10 @@ proc main =
    var
       # LAYER 1
       W1 = randMatrix(256, nodes, -1.0..1.0)
-      b1 = zeros(1, nodes)
+      b1 = zeros64(1, nodes)
       # LAYER 2
       W2 = randMatrix(nodes, 10, -1.0..1.0)
-      b2 = zeros(1, 10)
+      b2 = zeros64(1, 10)
       # MOMENTUMS
       Ms = (zerosLike(W1), zerosLike(b1), zerosLike(W2), zerosLike(b2))
    for i in 1 .. epochs:
@@ -111,6 +103,7 @@ proc main =
          # LAYER 2
          W2 += Ms[2]
          b2 += Ms[3]
+      # Print progress
       if i mod 250 == 0:
          echo(" Iteration ", i, ":")
          echo("   Loss = ", formatEng(loss))

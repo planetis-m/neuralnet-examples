@@ -11,6 +11,7 @@ makeUniversalBinary(loss)
 
 proc predict[T](W1, b1, W2: Matrix[T], b2: T, X: Matrix[T]): Matrix[T] =
    let
+      # Foward Prop
       # LAYER 1
       Z1 = X * W1 + RowVector64(b1)
       A1 = sigmoid(Z1)
@@ -35,18 +36,17 @@ proc main =
       W2 = randMatrix(nodes, 1, -1.0..1.0)
       b2 = 0.0
    for i in 1 .. 1000:
-      # Foward Prop
       let
+         # Foward Prop
          # LAYER 1
          Z1 = X * W1 + RowVector64(b1) # broadcast bias to (m, nodes)
          A1 = sigmoid(Z1)
          # LAYER 2
          Z2 = A1 * W2 + b2 # scalar to (m, 1)
          A2 = sigmoid(Z2)
-      # Cross Entropy
-      let loss = -sum(loss(A2, Y)) / m.float
-      # Back Prop
-      let
+         # Cross Entropy
+         loss = -sum(loss(A2, Y)) / m.float
+         # Back Prop
          # LAYER 2
          dZ2 = A2 - Y
          db2 = sum(dZ2)
@@ -62,6 +62,7 @@ proc main =
       # LAYER 1
       W1 -= rate * dW1
       b1 -= rate * db1
+      # Print progress
       if i mod 250 == 0:
          echo(" Iteration ", i, ":")
          echo("   Loss = ", formatEng(loss))
