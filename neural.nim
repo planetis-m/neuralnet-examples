@@ -9,6 +9,7 @@ proc loss(y, t: float): float {.inline.} =
    result = t * ln(y) + (1.0 - t) * ln(1.0 - y)
 makeUniversalBinary(loss)
 
+makeUniversal(round)
 proc predict[T](W1, b1, W2: Matrix[T], b2: T, X: Matrix[T]): Matrix[T] =
    let
       # Foward Prop
@@ -18,24 +19,25 @@ proc predict[T](W1, b1, W2: Matrix[T], b2: T, X: Matrix[T]): Matrix[T] =
       # LAYER 2
       Z2 = A1 * W2 + b2
       A2 = sigmoid(Z2)
-   result = A2
+   result = round(A2)
 
 proc main =
    const
       m = 4 # batch length
       nodes = 3
       rate = 0.01
+      epochs = 1_000
    let
       X = matrix(2, @[0.0, 0, 0, 1, 1, 0, 1, 1])
       Y = matrix(1, @[0.0, 1, 1, 0])
    var
       # LAYER 1
-      W1 = randMatrix(2, nodes, -1.0..1.0)
+      W1 = randNMatrix(X.n, nodes, 0.0, sqrt(2 / X.n)) # Kaiming He initialization
       b1 = zeros64(1, nodes)
       # LAYER 2
-      W2 = randMatrix(nodes, 1, -1.0..1.0)
+      W2 = randNMatrix(nodes, Y.n, 0.0, sqrt(2 / Y.n))
       b2 = 0.0
-   for i in 1 .. 1000:
+   for i in 1 .. epochs:
       let
          # Foward Prop
          # LAYER 1

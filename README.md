@@ -24,7 +24,8 @@ classification. The example functions as an OR gate.
 
 ### 2. [neural](neural.nim)
 Two layer neural network with gradient descent. Both layers use sigmoid as
-activation function. XOR gate. todo: "He normal initialization" for weights.
+activation function. XOR gate. Weights are initialized from a normal
+distribution with ``μ = 0`` and ``σ`` of ``sqrt(2/nl)`` (Kaiming He initialization).
 
 ```json
 {
@@ -58,6 +59,9 @@ The data set used is [semeion.data](http://archive.ics.uci.edu/ml/machine-learni
 ### 5. [minibatches](minibatches.nim)
 Same as previous, Data is split in small batches (subsets). Impoves memory
 efficiency, accuracy for a trade-off in compute efficiency. todo: avoid copying?
+
+**WARNING:** Due to destructor-based matrices this example runs out of memory
+until scope-based destruction is implemented.
 
 ```json
 {

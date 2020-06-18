@@ -24,7 +24,15 @@ proc sigmoid(s: float): float {.inline.} =
    result = 1.0 / (1.0 + exp(-s))
 makeUniversal(sigmoid)
 
-proc predict[T](W1, b1, W2, b2, X: Matrix[T]): Matrix[T] =
+proc maxIndexRows[T](m: Matrix[T]): seq[int] =
+   result = newSeq[int](m.m)
+   for i in 0 ..< m.m:
+      var s = 0
+      for j in 1 ..< m.n:
+         if m[i, j] > m[i, s]: s = j
+      result[i] = s
+
+proc predict[T](W1, b1, W2, b2, X: Matrix[T]): seq[int] =
    assert X.m == 1
    let
       # LAYER 1
@@ -33,7 +41,7 @@ proc predict[T](W1, b1, W2, b2, X: Matrix[T]): Matrix[T] =
       # LAYER 2
       Z2 = A1 * W2 + b2
       A2 = exp(Z2) / sum(exp(Z2))
-   result = A2
+   result = maxIndexRows(A2)
 
 template zerosLike[T](a: Matrix[T]): Matrix[T] = matrix[T](a.m, a.n)
 
@@ -61,11 +69,11 @@ proc main =
       sample = X[0..0, 0..^1]
    var
       # LAYER 1
-      W1 = randMatrix(256, nodes, -1.0..1.0)
+      W1 = randNMatrix(X.n, nodes, 0.0, sqrt(2 / X.n))
       b1 = zeros64(1, nodes)
       # LAYER 2
-      W2 = randMatrix(nodes, 10, -1.0..1.0)
-      b2 = zeros64(1, 10)
+      W2 = randNMatrix(nodes, Y.n, 0.0, sqrt(2 / Y.n))
+      b2 = zeros64(1, Y.n)
       # MOMENTUMS
       Ms = (zerosLike(W1), zerosLike(b1), zerosLike(W2), zerosLike(b2))
    for i in 1 .. epochs:

@@ -10,6 +10,7 @@ proc loss(y, t: float): float {.inline.} =
    result = t * ln(y) + (1.0 - t) * ln(1.0 - y)
 makeUniversalBinary(loss)
 
+makeUniversal(round)
 proc predict[T](W1, b1, W2: Matrix[T], b2: T, X: Matrix[T]): Matrix[T] =
    let
       # Foward Prop
@@ -19,7 +20,7 @@ proc predict[T](W1, b1, W2: Matrix[T], b2: T, X: Matrix[T]): Matrix[T] =
       # LAYER 2
       Z2 = A1 * W2 + b2
       A2 = sigmoid(Z2)
-   result = A2
+   result = round(A2)
 
 template zerosLike[T](a: Matrix[T]): Matrix[T] = matrix[T](a.m, a.n)
 
@@ -35,10 +36,10 @@ proc main =
       Y = matrix(1, @[0.0, 1, 1, 0])
    var
       # LAYER 1
-      W1 = randMatrix(2, nodes, -1.0..1.0)
+      W1 = randNMatrix(X.n, nodes, 0.0, sqrt(2 / X.n))
       b1 = zeros64(1, nodes)
       # LAYER 2
-      W2 = randMatrix(nodes, 1, -1.0..1.0)
+      W2 = randNMatrix(nodes, Y.n, 0.0, sqrt(2 / Y.n))
       b2 = 0.0
       # MOMENTUMS
       Ms = (zerosLike(W1), zerosLike(b1), zerosLike(W2), 0.0)
