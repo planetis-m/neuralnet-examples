@@ -34,15 +34,12 @@ proc main =
    let
       X = matrix(2, @[0.0, 0, 0, 1, 1, 0, 1, 1])
       Y = matrix(1, @[0.0, 1, 1, 0])
-      # Xavier initialization
-      xrange1 = sqrt(6.0 / float(X.n + nodes))
-      xrange2 = sqrt(6.0 / float(nodes + Y.n))
    var
       # LAYER 1
-      W1 = randMatrix(X.n, nodes, -xrange1..xrange1)
+      W1 = randNMatrix(X.n, nodes, 0.0, 3.6 / sqrt(nodes.float))
       b1 = zeros64(1, nodes)
       # LAYER 2
-      W2 = randMatrix(nodes, Y.n, -xrange2..xrange2)
+      W2 = randNMatrix(nodes, Y.n, 0.0, 3.6 / sqrt(Y.n.float))
       b2 = 0.0
       # MOMENTUMS
       Ms = (zerosLike(W1), zerosLike(b1), zerosLike(W2), 0.0)
