@@ -1,6 +1,8 @@
 # Neural net examples
-In this repo  you will find examples of neural networks implimented using
-matrices. This means, they're vectorised versions of the algorithms built
+In this repo  you will find examples of neural networks implimented from scratch using
+my matrix [library](https://github.com/b3liever/manu).
+The algorithms used are linear
+This means, they're vectorised versions of the algorithms built
 from scratch, using the tutorial linked at the bottom. An expirement that
 helped identify missing futures, bugs and usability problems in my matrix
 [library](https://github.com/b3liever/manu).
@@ -24,8 +26,8 @@ classification. The example functions as an OR gate.
 
 ### 2. [neural](neural.nim)
 Two layer neural network with gradient descent. Both layers use sigmoid as
-activation function. XOR gate. Weights are initialized from a normal
-distribution with ``μ = 0`` and ``σ`` of ``sqrt(2/nl)`` (Kaiming He initialization).
+activation function. XOR gate. Weights are initialized from a uniform
+distribution ``U(-sqrt(6 / (in + out)), sqrt(6 / (in + out)))`` (Xavier initialization).
 
 ```json
 {
@@ -40,7 +42,7 @@ speed and accuracy (avoid getting stuck in a local minima). XOR gate
 
 ```json
 {
-   "layers": [2, 3, 1],
+   "layers": [2, 5, 1],
    "activation_function": ["sigmoid", "sigmoid"]
 }
 ```
@@ -70,7 +72,11 @@ until scope-based destruction is implemented.
 }
 ```
 
+**DISCLAIMER**: Only for learning purposes. Nim has its own machine learning
+framework [Arraymancer](https://github.com/mratsim/Arraymancer) as well as torch bindings.
+
 ## Acknowledgments
+- [UFLDL Tutorial](http://ufldl.stanford.edu/tutorial/)
 - [How to implement a neural network](https://peterroelants.github.io/posts/neural-network-implementation-part01/)
 - [Machine Learning FAQ](https://sebastianraschka.com/faq/index.html)
 
