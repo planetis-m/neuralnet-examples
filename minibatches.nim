@@ -35,10 +35,10 @@ proc maxIndexRows[T](m: Matrix[T]): seq[int] =
 proc predict[T](W1, b1, W2, b2, X: Matrix[T]): seq[int] =
    assert X.m == 1
    let
-      # LAYER 1
+      # Layer 1
       Z1 = X * W1 + b1
       A1 = sigmoid(Z1)
-      # LAYER 2
+      # Layer 2
       Z2 = A1 * W2 + b2
       A2 = exp(Z2) / sum(exp(Z2))
    result = maxIndexRows(A2)
@@ -52,7 +52,7 @@ iterator batches[T](X, Y: Matrix[T], len, batchLen: int): (Matrix[T], Matrix[T])
    for i in 0..<len:
       batches[i] = i.int16
    shuffle(batches)
-   for k in countup(0, len, batchLen):
+   for k in countup(0, len-1, batchLen):
       let rows = batches[k ..< k + batchLen]
       yield (X[rows, 0..^1], Y[rows, 0..^1])
 
@@ -68,47 +68,46 @@ proc main =
       (X, Y) = readData()
       sample = X[0..0, 0..^1]
    var
-      # LAYER 1
+      # Layer 1
       W1 = randNMatrix(X.n, nodes, 0.0, sqrt(2 / X.n))
       b1 = zeros64(1, nodes)
-      # LAYER 2
-      W2 = randNMatrix(nodes, Y.n, 0.0, sqrt(2 / Y.n))
+      # Layer 2
+      W2 = randNMatrix(nodes, Y.n, 0.0, sqrt(2 / nodes))
       b2 = zeros64(1, Y.n)
-      # MOMENTUMS
+      # Momentums
       Ms = (zerosLike(W1), zerosLike(b1), zerosLike(W2), zerosLike(b2))
    for i in 1 .. epochs:
       var loss = 0.0
-      for (X, Y) in batches(X, Y, len, m):
+      for X, Y in batches(X, Y, len, m):
          # Foward Prop
          let
-            # LAYER 1
+            # Layer 1
             Z1 = X * W1 + RowVector64(b1)
             A1 = sigmoid(Z1)
-            # LAYER 2
+            # Layer 2
             Z2 = A1 * W2 + RowVector64(b2)
             A2 = exp(Z2) /. ColVector64(sumRows(exp(Z2))) # softmax
-         # Cross Entropy
-         loss = -sum(ln(A2) *. Y)
-         # Back Prop
-         let
-            # LAYER 2
+            # Back Prop
+            # Layer 2
             dZ2 = A2 - Y
             db2 = sumColumns(dZ2)
             dW2 = A1.transpose * dZ2
-            # LAYER 1
+            # Layer 1
             dZ1 = (dZ2 * W2.transpose) *. (1.0 - A1) *. A1
             db1 = sumColumns(dZ1)
             dW1 = X.transpose * dZ1
+         # Cross Entropy
+         loss = -sum(ln(A2) *. Y)
          # Gradient Descent
-         # MOMENTUMS
+         # Momentums
          Ms[0] = term * Ms[0] - rate * dW1
          Ms[1] = term * Ms[1] - rate * db1
          Ms[2] = term * Ms[2] - rate * dW2
          Ms[3] = term * Ms[3] - rate * db2
-         # LAYER 1
+         # Layer 1
          W1 += Ms[0]
          b1 += Ms[1]
-         # LAYER 2
+         # Layer 2
          W2 += Ms[2]
          b2 += Ms[3]
       # Print progress

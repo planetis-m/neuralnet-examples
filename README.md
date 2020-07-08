@@ -1,15 +1,8 @@
 # Neural net examples
 In this repo  you will find examples of neural networks implimented from scratch using
 my matrix [library](https://github.com/b3liever/manu).
-The algorithms used are linear
-This means, they're vectorised versions of the algorithms built
-from scratch, using the tutorial linked at the bottom. An expirement that
-helped identify missing futures, bugs and usability problems in my matrix
-[library](https://github.com/b3liever/manu).
 
 ## Examples included
-The examples follow a progression of sophistication, layer count and
-function. Done for comparison.
 
 ### 1. [perceptron](perceptron.nim)
 The [perceptron](https://en.wikipedia.org/wiki/Perceptron) algorithm.
@@ -61,9 +54,6 @@ The data set used is [semeion.data](http://archive.ics.uci.edu/ml/machine-learni
 ### 5. [minibatches](minibatches.nim)
 Same as previous, Data is split in small batches (subsets). Impoves memory
 efficiency, accuracy for a trade-off in compute efficiency. todo: avoid copying?
-
-**WARNING:** Due to destructor-based matrices this example runs out of memory
-until scope-based destruction is implemented.
 
 ```json
 {
