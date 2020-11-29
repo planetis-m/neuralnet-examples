@@ -1,5 +1,5 @@
 # Copyright (c) 2020 Antonis Geralis
-import parsecsv, csvutils, strutils, random, math, manu/matrix
+import parsecsv, csvutils, strutils, random, math, ../manu/manu/matrix
 {.passC: "-march=native -ffast-math".}
 
 type
@@ -78,7 +78,7 @@ proc main =
       Ms = (zerosLike(W1), zerosLike(b1), zerosLike(W2), zerosLike(b2))
    for i in 1 .. epochs:
       var loss = 0.0
-      for X, Y in batches(X, Y, len, m):
+      for (X, Y) in batches(X, Y, len, m):
          # Foward Prop
          let
             # Layer 1

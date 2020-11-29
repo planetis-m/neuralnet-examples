@@ -1,23 +1,20 @@
 # Copyright (c) 2020 Antonis Geralis
-import parsecsv, csvutils, strutils, math, manu/matrix
+import eminim, strutils, math, manu/matrix, streams, parsejson
 {.passC: "-march=native -ffast-math".}
 
 type
-   Row = object
+   HandDigits = object
       input: array[256, float]
       target: array[10, float]
 
-proc readData: (Matrix64, Matrix64) =
+proc readSemeionData: (Matrix64, Matrix64) =
    var
       inputs: seq[float]
       targets: seq[float]
-      c: CsvParser
-   open(c, "semeion.data", ' ')
-   while readRow(c):
-      let d = c.row.to(Row)
-      inputs.add d.input
-      targets.add d.target
-   close(c)
+   let fs = newFileStream("semeion.json")
+   for x in jsonItems(fs, HandDigits):
+      targets.add x.target
+      inputs.add x.input
    result = (matrix(256, inputs), matrix(10, targets))
 
 proc sigmoid(s: float): float {.inline.} =
@@ -60,7 +57,7 @@ proc main =
       term = 0.6
       epochs = 2_000
    let
-      (X, Y) = readData()
+      (X, Y) = readSemeionData()
       sample = X[0..0, 0..^1]
    var
       # Layer 1
