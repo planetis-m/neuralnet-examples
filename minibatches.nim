@@ -1,5 +1,5 @@
 # Copyright (c) 2020 Antonis Geralis
-import parsecsv, csvutils, strutils, random, math, ../manu/manu/matrix
+import parsecsv, csvutils, strutils, random, math, manu/matrix
 {.passC: "-march=native -ffast-math".}
 
 type

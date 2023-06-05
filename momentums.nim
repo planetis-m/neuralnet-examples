@@ -1,5 +1,5 @@
 # Copyright (c) 2019-2020 Antonis Geralis
-import random, math, strutils, "../manu/manu/matrix"
+import random, math, strutils, manu/matrix
 {.passC: "-march=native -ffast-math".}
 
 proc sigmoid(s: float): float {.inline.} =
