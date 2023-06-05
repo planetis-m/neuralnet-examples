@@ -87,8 +87,8 @@ proc main =
         # Layer 2
         Z2 = A1 * W2 + RowVector64(b2)
         A2 = exp(Z2) /. ColVector64(sumRows(exp(Z2))) # softmax
-                                                      # Back Prop
-                                                      # Layer 2
+        # Back Prop
+        # Layer 2
         dZ2 = A2 - Y
         db2 = sumColumns(dZ2)
         dW2 = A1.transpose * dZ2
