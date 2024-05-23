@@ -1,21 +1,29 @@
 # Copyright (c) 2020 Antonis Geralis
-import eminim, strutils, math, manu/matrix, streams, parsejson
+import std/[parsecsv, strutils, math], manu/matrix
 {.passC: "-march=native -ffast-math".}
 
-type
-  HandDigits = object
-    input: array[256, float]
-    target: array[10, float]
+const
+  SemeionDataLen = 1593
+  SemeionAttributes = 256
+  SemeionLabels = 10
 
-proc readSemeionData: (Matrix64, Matrix64) =
-  var
-    inputs: seq[float]
-    targets: seq[float]
-  let fs = newFileStream("semeion.json")
-  for x in jsonItems(fs, HandDigits):
-    targets.add x.target
-    inputs.add x.input
-  result = (matrix(256, inputs), matrix(10, targets))
+proc readSemeionData: (Matrix[float], Matrix[float]) =
+  var p: CsvParser
+  try:
+    open(p, "semeion.data", ' ')
+    var
+      inputs = newSeq[float](SemeionAttributes*SemeionDataLen)
+      targets = newSeq[float](SemeionLabels*SemeionDataLen)
+    var x = 0
+    while readRow(p):
+      for y in 0..<SemeionAttributes:
+        inputs[x * SemeionAttributes + y] = parseFloat(p.row[y])
+      for y in 0..<SemeionLabels:
+        targets[x * SemeionLabels + y] = parseFloat(p.row[SemeionAttributes + y])
+      inc x
+    result = (matrix(SemeionAttributes, inputs), matrix(SemeionLabels, targets))
+  finally:
+    close(p)
 
 proc sigmoid(s: float): float {.inline.} =
   result = 1.0 / (1.0 + exp(-s))
