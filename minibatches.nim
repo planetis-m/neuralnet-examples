@@ -41,11 +41,11 @@ proc predict[T](W1, b1, W2, b2, X: Matrix[T]): seq[int] =
   assert X.m == 1
   let
     # Layer 1
-    Z1 = X * W1 + b1
+    Z1 = X * W1 + RowVector64(b1)
     A1 = sigmoid(Z1)
     # Layer 2
-    Z2 = A1 * W2 + b2
-    A2 = exp(Z2) / sum(exp(Z2))
+    Z2 = A1 * W2 + RowVector64(b2)
+    A2 = exp(Z2) /. ColVector64(sumRows(exp(Z2)))
   result = maxIndexRows(A2)
 
 template zerosLike[T](a: Matrix[T]): Matrix[T] = matrix[T](a.m, a.n)
@@ -58,7 +58,8 @@ iterator batches[T](X, Y: Matrix[T], len, batchLen: int): (Matrix[T], Matrix[T])
     batches[i] = i.int16
   shuffle(batches)
   for k in countup(0, len-1, batchLen):
-    let rows = batches[k ..< k + batchLen]
+    let last = min(k + batchLen, len)
+    let rows = batches[k ..< last]
     yield (X[rows, 0..^1], Y[rows, 0..^1])
 
 proc main =
@@ -71,7 +72,7 @@ proc main =
     epochs = 2_000
   let
     (X, Y) = readSemeionData()
-    sample = X[1012..1012, 0..^1]
+    sample = X[635..639, 0..^1]
   var
     # Layer 1
     W1 = randNMatrix(X.n, nodes, 0.0, sqrt(2 / X.n))
@@ -118,6 +119,6 @@ proc main =
     if i mod 250 == 0:
       echo(" Iteration ", i, ":")
       echo("   Loss = ", formatEng(loss))
-      echo("   Prediction =\n", predict(W1, b1, W2, b2, sample))
+      echo("   Prediction = ", predict(W1, b1, W2, b2, sample))
 
 main()
