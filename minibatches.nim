@@ -1,24 +1,29 @@
 # Copyright (c) 2020 Antonis Geralis
-import parsecsv, csvutils, strutils, random, math, manu/matrix
+import std/[parsecsv, strutils, random, math], manu/matrix
 {.passC: "-march=native -ffast-math".}
 
-type
-  Row = object
-    input: array[256, float]
-    target: array[10, float]
+const
+  SemeionDataLen = 1593
+  SemeionAttributes = 256
+  SemeionLabels = 10
 
-proc readData: (Matrix[float], Matrix[float]) =
-  var
-    inputs: seq[float]
-    targets: seq[float]
-    c: CsvParser
-  open(c, "semeion.data", ' ')
-  while readRow(c):
-    let d = c.row.to(Row)
-    inputs.add d.input
-    targets.add d.target
-  close(c)
-  result = (matrix(256, inputs), matrix(10, targets))
+proc readSemeionData: (Matrix[float], Matrix[float]) =
+  var p: CsvParser
+  try:
+    open(p, "semeion.data", ' ')
+    var
+      inputs = newSeq[float](SemeionAttributes*SemeionDataLen)
+      targets = newSeq[float](SemeionLabels*SemeionDataLen)
+    var x = 0
+    while readRow(p):
+      for y in 0..<SemeionAttributes:
+        inputs[x * SemeionAttributes + y] = parseFloat(p.row[y])
+      for y in 0..<SemeionLabels:
+        targets[x * SemeionLabels + y] = parseFloat(p.row[SemeionAttributes + y])
+      inc x
+    result = (matrix(SemeionAttributes, inputs), matrix(SemeionLabels, targets))
+  finally:
+    close(p)
 
 proc sigmoid(s: float): float {.inline.} =
   result = 1.0 / (1.0 + exp(-s))
@@ -47,7 +52,7 @@ template zerosLike[T](a: Matrix[T]): Matrix[T] = matrix[T](a.m, a.n)
 
 iterator batches[T](X, Y: Matrix[T], len, batchLen: int): (Matrix[T], Matrix[T]) =
   let n = if batchLen != 0: len div batchLen else: 0
-   assert batchLen * n == len
+  assert batchLen * n == len
   var batches = newSeq[int16](len)
   for i in 0..<len:
     batches[i] = i.int16
@@ -65,7 +70,7 @@ proc main =
     m = 177
     epochs = 2_000
   let
-    (X, Y) = readData()
+    (X, Y) = readSemeionData()
     sample = X[0..0, 0..^1]
   var
     # Layer 1
