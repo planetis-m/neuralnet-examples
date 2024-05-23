@@ -53,7 +53,7 @@ The data set used is [semeion.data](http://archive.ics.uci.edu/ml/machine-learni
 
 ### 5. [minibatches](minibatches.nim)
 Same as previous, Data is split in small batches (subsets). Impoves memory
-efficiency, accuracy for a trade-off in compute efficiency. todo: avoid copying?
+efficiency, accuracy for a trade-off in compute efficiency. Uses RMSProp instead of GSD.
 
 ```json
 {

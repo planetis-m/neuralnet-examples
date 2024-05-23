@@ -66,7 +66,8 @@ proc main =
     len = 1593
     nodes = 28
     rate = 0.01
-    term = 0.9
+    beta = 0.9 # decay rate
+    epsilon = 1e-8 # avoid division by zero
     m = 177
     epochs = 2_000
   let
@@ -79,8 +80,8 @@ proc main =
     # Layer 2
     W2 = randNMatrix(nodes, Y.n, 0.0, sqrt(2 / nodes))
     b2 = zeros64(1, Y.n)
-    # Momentums
-    Ms = (zerosLike(W1), zerosLike(b1), zerosLike(W2), zerosLike(b2))
+    # RMSProp
+    cache = (zerosLike(W1), zerosLike(b1), zerosLike(W2), zerosLike(b2))
   for i in 1 .. epochs:
     var loss = 0.0
     for (X, Y) in batches(X, Y, len, m):
@@ -103,18 +104,17 @@ proc main =
         dW1 = X.transpose * dZ1
       # Cross Entropy
       loss = -sum(ln(A2) *. Y)
-      # Gradient Descent
-      # Momentums
-      Ms[0] = term * Ms[0] - rate * dW1
-      Ms[1] = term * Ms[1] - rate * db1
-      Ms[2] = term * Ms[2] - rate * dW2
-      Ms[3] = term * Ms[3] - rate * db2
+      # RMSProp updates
+      cache[0] = beta * cache[0] + (1.0 - beta) * dW1 *. dW1
+      cache[1] = beta * cache[1] + (1.0 - beta) * db1 *. db1
+      cache[2] = beta * cache[2] + (1.0 - beta) * dW2 *. dW2
+      cache[3] = beta * cache[3] + (1.0 - beta) * db2 *. db2
       # Layer 1
-      W1 += Ms[0]
-      b1 += Ms[1]
+      W1 -= rate * dW1 /. (sqrt(cache[0]) + epsilon)
+      b1 -= rate * db1 /. (sqrt(cache[1]) + epsilon)
       # Layer 2
-      W2 += Ms[2]
-      b2 += Ms[3]
+      W2 -= rate * dW2 /. (sqrt(cache[2]) + epsilon)
+      b2 -= rate * db2 /. (sqrt(cache[3]) + epsilon)
     # Print progress
     if i mod 250 == 0:
       echo(" Iteration ", i, ":")
