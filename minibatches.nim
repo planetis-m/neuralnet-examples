@@ -63,7 +63,6 @@ iterator batches[T](X, Y: Matrix[T], len, batchLen: int): (Matrix[T], Matrix[T])
 
 proc main =
   const
-    len = 1593
     nodes = 28
     rate = 0.01
     beta = 0.9 # decay rate
@@ -72,7 +71,7 @@ proc main =
     epochs = 2_000
   let
     (X, Y) = readSemeionData()
-    sample = X[0..0, 0..^1]
+    sample = X[1012..1012, 0..^1]
   var
     # Layer 1
     W1 = randNMatrix(X.n, nodes, 0.0, sqrt(2 / X.n))
@@ -84,7 +83,7 @@ proc main =
     cache = (zerosLike(W1), zerosLike(b1), zerosLike(W2), zerosLike(b2))
   for i in 1 .. epochs:
     var loss = 0.0
-    for (X, Y) in batches(X, Y, len, m):
+    for (X, Y) in batches(X, Y, SemeionDataLen, m):
       # Foward Prop
       let
         # Layer 1
@@ -105,10 +104,10 @@ proc main =
       # Cross Entropy
       loss = -sum(ln(A2) *. Y)
       # RMSProp updates
-      cache[0] = beta * cache[0] + (1.0 - beta) * dW1 *. dW1
-      cache[1] = beta * cache[1] + (1.0 - beta) * db1 *. db1
-      cache[2] = beta * cache[2] + (1.0 - beta) * dW2 *. dW2
-      cache[3] = beta * cache[3] + (1.0 - beta) * db2 *. db2
+      cache[0] = beta * cache[0] + (1.0 - beta) * (dW1 *. dW1)
+      cache[1] = beta * cache[1] + (1.0 - beta) * (db1 *. db1)
+      cache[2] = beta * cache[2] + (1.0 - beta) * (dW2 *. dW2)
+      cache[3] = beta * cache[3] + (1.0 - beta) * (db2 *. db2)
       # Layer 1
       W1 -= rate * dW1 /. (sqrt(cache[0]) + epsilon)
       b1 -= rate * db1 /. (sqrt(cache[1]) + epsilon)
