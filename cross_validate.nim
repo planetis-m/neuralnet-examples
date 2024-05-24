@@ -125,28 +125,39 @@ proc newKFoldCrossValidation(numInstances, numFolds: int): KFoldCrossValidation 
   shuffle(result.indices)
 
 proc getTrainFold[T](x: KFoldCrossValidation, fold: int, X, Y: Matrix[T]): (Matrix[T], Matrix[T]) =
-  var rows: seq[int16] = @[]
   let
     dataLen = x.indices.len
-    foldLen = dataLen div x.K
+    foldLen = if x.K != 0: dataLen div x.K else: 0
     first = fold * foldLen
     last = min(first + foldLen, dataLen)
+  var
+    trainX = matrixUninit[T](dataLen-foldLen, X.n)
+    trainY = matrixUninit[T](dataLen-foldLen, Y.n)
+  var c = 0
   for i in 0..<first:
-    rows.add(x.indices[i])
+    trainX[[c], 0..^1] = X[[x.indices[i]], 0..^1]
+    trainY[[c], 0..^1] = Y[[x.indices[i]], 0..^1]
+    inc c
   for i in last..<dataLen:
-    rows.add(x.indices[i])
-  result = (X[rows, 0..^1], Y[rows, 0..^1])
+    trainX[[c], 0..^1] = X[[x.indices[i]], 0..^1]
+    trainY[[c], 0..^1] = Y[[x.indices[i]], 0..^1]
+    inc c
+  result = (trainX, trainY)
 
 proc getTestFold[T](x: KFoldCrossValidation, fold: int, X, Y: Matrix[T]): (Matrix[T], Matrix[T]) =
-  var rows: seq[int16] = @[]
   let
     dataLen = x.indices.len
-    foldLen = dataLen div x.K
+    foldLen = if x.K != 0: dataLen div x.K else: 0
     first = fold * foldLen
     last = min(first + foldLen, dataLen)
+  var
+    testX = matrixUninit[T](foldLen, X.n)
+    testY = matrixUninit[T](foldLen, Y.n)
+  var c = 0
   for i in first..<last:
-    rows.add(x.indices[i])
-  result = (X[rows, 0..^1], Y[rows, 0..^1])
+    testX[[c], 0..^1] = X[[x.indices[i]], 0..^1]
+    testY[[c], 0..^1] = Y[[x.indices[i]], 0..^1]
+  result = (testX, testY)
 
 proc main =
   const
