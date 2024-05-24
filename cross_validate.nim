@@ -125,28 +125,28 @@ proc newKFoldCrossValidation(numInstances, numFolds: int): KFoldCrossValidation 
   shuffle(result.indices)
 
 proc getTrainFold[T](x: KFoldCrossValidation, fold: int, X, Y: Matrix[T]): (Matrix[T], Matrix[T]) =
-  var trainIndices: seq[int16] = @[]
+  var rows: seq[int16] = @[]
   let
     dataLen = x.indices.len
-    foldSize = dataLen div x.K
-    foldStart = fold * foldSize
-    foldEnd = min(foldStart + foldSize, dataLen)
-  for i in 0..<foldStart:
-    trainIndices.add(x.indices[i])
-  for i in foldEnd..<dataLen:
-    trainIndices.add(x.indices[i])
-  result = (X[trainIndices, 0..^1], Y[trainIndices, 0..^1])
+    foldLen = dataLen div x.K
+    first = fold * foldLen
+    last = min(first + foldLen, dataLen)
+  for i in 0..<first:
+    rows.add(x.indices[i])
+  for i in last..<dataLen:
+    rows.add(x.indices[i])
+  result = (X[rows, 0..^1], Y[rows, 0..^1])
 
 proc getTestFold[T](x: KFoldCrossValidation, fold: int, X, Y: Matrix[T]): (Matrix[T], Matrix[T]) =
-  var testIndices: seq[int16] = @[]
+  var rows: seq[int16] = @[]
   let
     dataLen = x.indices.len
-    foldSize = dataLen div x.K
-    foldStart = fold * foldSize
-    foldEnd = min(foldStart + foldSize, dataLen)
-  for i in foldStart..<foldEnd:
-    testIndices.add(x.indices[i])
-  result = (X[testIndices, 0..^1], Y[testIndices, 0..^1])
+    foldLen = dataLen div x.K
+    first = fold * foldLen
+    last = min(first + foldLen, dataLen)
+  for i in first..<last:
+    rows.add(x.indices[i])
+  result = (X[rows, 0..^1], Y[rows, 0..^1])
 
 proc main =
   const
