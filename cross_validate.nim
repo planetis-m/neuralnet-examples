@@ -112,15 +112,39 @@ proc score(predictions, trueLabels: seq[int32]): tuple[accuracy, precision, reca
 
   result = (accuracy, avgPrecision, avgRecall, avgF1)
 
-proc `&`[T](a, b: Matrix[T]): Matrix[T] =
-  assert a.n == b.n, "Matrices must have the same number of columns"
-  result = matrix[T](a.m + b.m, a.n)
-  for i in 0..<a.m:
-    for j in 0..<a.n:
-      result[i, j] = a[i, j]
-  for i in 0..<b.m:
-    for j in 0..<b.n:
-      result[a.m + i, j] = b[i, j]
+type
+  KFoldCrossValidation = object
+    folds: int
+    indices: seq[int16]
+
+proc newKFoldCrossValidation(instances, folds: int): KFoldCrossValidation =
+  result = KFoldCrossValidation(folds: folds)
+  result.indices = newSeq[int16](instances)
+  for i in 0..<instances:
+    result.indices[i] = i.int16
+  shuffle(result.indices)
+
+proc getTrainFold[T](x: KFoldCrossValidation, foldIndex: int, X, Y: Matrix[T]): (Matrix[T], Matrix[T]) =
+  var trainIndices: seq[int16] = @[]
+  let
+    dataLen = x.indices.len
+    foldStart = foldIndex * dataLen div x.folds
+    foldEnd = (foldIndex + 1) * dataLen div x.folds
+  for i in 0..<foldStart:
+    trainIndices.add(x.indices[i])
+  for i in foldEnd..<dataLen:
+    trainIndices.add(x.indices[i])
+  result = (X[trainIndices, 0..^1], Y[trainIndices, 0..^1])
+
+proc getTestFold[T](x: KFoldCrossValidation, foldIndex: int, X, Y: Matrix[T]): (Matrix[T], Matrix[T]) =
+  var testIndices: seq[int16] = @[]
+  let
+    dataLen = x.indices.len
+    foldStart = foldIndex * dataLen div x.folds
+    foldEnd = (foldIndex + 1) * dataLen div x.folds
+  for i in foldStart..<foldEnd:
+    testIndices.add(x.indices[i])
+  result = (X[testIndices, 0..^1], Y[testIndices, 0..^1])
 
 proc main =
   const
@@ -133,28 +157,24 @@ proc main =
     k = 5 # number of folds for cross-validation
   let (X, Y) = readSemeionData()
   # Cross Validation
-  let foldSize = X.m div k
+  let cv = newKFoldCrossValidation(SemeionDataLen, k)
   var metrics: seq[tuple[accuracy, precision, recall, f1: float]] = @[]
   for fold in 0..<k:
     let
-      first = fold * foldSize
-      last = min(first + foldSize, X.m)
-      testX = X[first..<last, 0..^1]
-      testY = Y[first..<last, 0..^1]
-      trainX = X[0..<first, 0..^1] & X[last..<X.m, 0..^1]
-      trainY = Y[0..<first, 0..^1] & Y[last..<Y.m, 0..^1]
+      (testX, testY) = cv.getTestFold(fold, X, Y)
+      (trainX, trainY) = cv.getTrainFold(fold, X, Y)
     var
       # Layer 1
-      W1 = randNMatrix(X.n, nodes, 0.0, sqrt(2 / X.n))
+      W1 = randNMatrix(trainX.n, nodes, 0.0, sqrt(2 / trainX.n))
       b1 = zeros64(1, nodes)
       # Layer 2
-      W2 = randNMatrix(nodes, Y.n, 0.0, sqrt(2 / nodes))
-      b2 = zeros64(1, Y.n)
+      W2 = randNMatrix(nodes, trainY.n, 0.0, sqrt(2 / nodes))
+      b2 = zeros64(1, trainY.n)
       # RMSProp
       cache = (zerosLike(W1), zerosLike(b1), zerosLike(W2), zerosLike(b2))
     for i in 1 .. epochs:
       var loss = 0.0
-      for (X, Y) in batches(X, Y, SemeionDataLen, m):
+      for (X, Y) in batches(trainX, trainY, trainX.m, m):
         # Foward Prop
         let
           # Layer 1
