@@ -37,15 +37,15 @@ proc loss(y, t: float): float {.inline.} =
   result = t * ln(y) + (1.0 - t) * ln(1.0 - y)
 makeUniversalBinary(loss)
 
-proc maxIndexRows[T](m: Matrix[T]): seq[int] =
-  result = newSeq[int](m.m)
+proc maxIndexRows[T](m: Matrix[T]): seq[int32] =
+  result = newSeq[int32](m.m)
   for i in 0 ..< m.m:
-    var s = 0
+    var s: int32 = 0
     for j in 1 ..< m.n:
-      if m[i, j] > m[i, s]: s = j
+      if m[i, j] > m[i, s]: s = j.int32
     result[i] = s
 
-proc predict[T](W1, b1, W2, b2, X: Matrix[T]): seq[int] =
+proc predict[T](W1, b1, W2, b2, X: Matrix[T]): seq[int32] =
   assert X.m == 1
   let
     # Layer 1

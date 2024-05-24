@@ -29,15 +29,15 @@ proc sigmoid(s: float): float {.inline.} =
   result = 1.0 / (1.0 + exp(-s))
 makeUniversal(sigmoid)
 
-proc maxIndexRows[T](m: Matrix[T]): seq[int] =
-  result = newSeq[int](m.m)
+proc maxIndexRows[T](m: Matrix[T]): seq[int32] =
+  result = newSeq[int32](m.m)
   for i in 0 ..< m.m:
-    var s = 0
+    var s: int32 = 0
     for j in 1 ..< m.n:
-      if m[i, j] > m[i, s]: s = j
+      if m[i, j] > m[i, s]: s = j.int32
     result[i] = s
 
-proc predict[T](W1, b1, W2, b2, X: Matrix[T]): seq[int] =
+proc predict[T](W1, b1, W2, b2, X: Matrix[T]): seq[int32] =
   assert X.m == 1
   let
     # Layer 1
@@ -62,13 +62,11 @@ iterator batches[T](X, Y: Matrix[T], len, batchLen: int): (Matrix[T], Matrix[T])
     let rows = batches[k ..< last]
     yield (X[rows, 0..^1], Y[rows, 0..^1])
 
-proc score[T](X, yTrue, W1, b1, W2, b2: Matrix[T]): tuple[accuracy, precision, recall, f1: float] =
+proc score(predictions, trueLabels: seq[int32]): tuple[accuracy, precision, recall, f1: float] =
   var tp, fp, tn, fn: array[SemeionLabels, int32]
+  assert predictions.len == trueLabels.len
 
-  let predictions = predict(W1, b1, W2, b2, X)
-  let trueLabels = maxIndexRows(yTrue)
-
-  for i in 0..<X.m:
+  for i in 0..<predictions.len:
     let trueLabel = trueLabels[i]
     let predLabel = predictions[i]
 
@@ -84,7 +82,7 @@ proc score[T](X, yTrue, W1, b1, W2, b2: Matrix[T]): tuple[accuracy, precision, r
         if j != trueLabel and j != predLabel:
           inc tn[j]
 
-  var accuracy: float32 = 0
+  var accuracy: float = 0
   var precision, recall, f1: array[SemeionLabels, float]
 
   for i in 0..<SemeionLabels:
@@ -192,9 +190,12 @@ proc main =
         W2 -= rate * dW2 /. (sqrt(cache[2]) + epsilon)
         b2 -= rate * db2 /. (sqrt(cache[3]) + epsilon)
     # Score
-    let foldMetrics = score(testX, testY, W1, b1, W2, b2)
+    let predictions = predict(W1, b1, W2, b2, testX)
+    let trueLabels = maxIndexRows(testY)
+    let foldMetrics = score(predictions, trueLabels)
     metrics.add(foldMetrics)
     echo("Fold ", fold, ": ", foldMetrics)
+
   # Average
   var avgAccuracy, avgPrecision, avgRecall, avgF1: float32 = 0
   for m in metrics:
@@ -202,6 +203,7 @@ proc main =
     avgPrecision += m.precision
     avgRecall += m.recall
     avgF1 += m.f1
+
   avgAccuracy /= k.float32
   avgPrecision /= k.float32
   avgRecall /= k.float32
