@@ -114,34 +114,36 @@ proc score(predictions, trueLabels: seq[int32]): tuple[accuracy, precision, reca
 
 type
   KFoldCrossValidation = object
-    folds: int
+    K: int
     indices: seq[int16]
 
-proc newKFoldCrossValidation(instances, folds: int): KFoldCrossValidation =
-  result = KFoldCrossValidation(folds: folds)
-  result.indices = newSeq[int16](instances)
-  for i in 0..<instances:
+proc newKFoldCrossValidation(numInstances, numFolds: int): KFoldCrossValidation =
+  result = KFoldCrossValidation(K: numFolds)
+  result.indices = newSeq[int16](numInstances)
+  for i in 0..<numInstances:
     result.indices[i] = i.int16
   shuffle(result.indices)
 
-proc getTrainFold[T](x: KFoldCrossValidation, foldIndex: int, X, Y: Matrix[T]): (Matrix[T], Matrix[T]) =
+proc getTrainFold[T](x: KFoldCrossValidation, fold: int, X, Y: Matrix[T]): (Matrix[T], Matrix[T]) =
   var trainIndices: seq[int16] = @[]
   let
     dataLen = x.indices.len
-    foldStart = foldIndex * dataLen div x.folds
-    foldEnd = (foldIndex + 1) * dataLen div x.folds
+    foldSize = dataLen div x.K
+    foldStart = fold * foldSize
+    foldEnd = min(foldStart + foldSize, dataLen)
   for i in 0..<foldStart:
     trainIndices.add(x.indices[i])
   for i in foldEnd..<dataLen:
     trainIndices.add(x.indices[i])
   result = (X[trainIndices, 0..^1], Y[trainIndices, 0..^1])
 
-proc getTestFold[T](x: KFoldCrossValidation, foldIndex: int, X, Y: Matrix[T]): (Matrix[T], Matrix[T]) =
+proc getTestFold[T](x: KFoldCrossValidation, fold: int, X, Y: Matrix[T]): (Matrix[T], Matrix[T]) =
   var testIndices: seq[int16] = @[]
   let
     dataLen = x.indices.len
-    foldStart = foldIndex * dataLen div x.folds
-    foldEnd = (foldIndex + 1) * dataLen div x.folds
+    foldSize = dataLen div x.K
+    foldStart = fold * foldSize
+    foldEnd = min(foldStart + foldSize, dataLen)
   for i in foldStart..<foldEnd:
     testIndices.add(x.indices[i])
   result = (X[testIndices, 0..^1], Y[testIndices, 0..^1])
