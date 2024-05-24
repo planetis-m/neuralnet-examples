@@ -149,6 +149,7 @@ proc getTestFold[T](x: KFoldCrossValidation, fold: int, X, Y: Matrix[T]): (Matri
   result = (X[rows, 0..^1], Y[rows, 0..^1])
 
 proc main =
+  # randomize(123)
   const
     nodes = 28
     rate = 0.01
@@ -234,3 +235,8 @@ proc main =
   echo("  Average F1 Score: ", avgF1)
 
 main()
+# Cross-Validation Results:
+#   Average Accuracy: 0.9816352
+#   Average Precision: 0.90808403
+#   Average Recall: 0.908517
+#   Average F1 Score: 0.90716356
