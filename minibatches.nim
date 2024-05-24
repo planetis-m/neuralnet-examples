@@ -41,11 +41,11 @@ proc predict[T](W1, b1, W2, b2, X: Matrix[T]): seq[int] =
   assert X.m == 1
   let
     # Layer 1
-    Z1 = X * W1 + RowVector64(b1)
+    Z1 = X * W1 + RowVector[T](b1)
     A1 = sigmoid(Z1)
     # Layer 2
-    Z2 = A1 * W2 + RowVector64(b2)
-    A2 = exp(Z2) /. ColVector64(sumRows(exp(Z2)))
+    Z2 = A1 * W2 + RowVector[T](b2)
+    A2 = exp(Z2) /. ColVector[T](sumRows(exp(Z2)))
   result = maxIndexRows(A2)
 
 template zerosLike[T](a: Matrix[T]): Matrix[T] = matrix[T](a.m, a.n)
