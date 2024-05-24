@@ -65,9 +65,12 @@ iterator batches[T](X, Y: Matrix[T], len, batchLen: int): (Matrix[T], Matrix[T])
 proc score[T](X, yTrue, W1, b1, W2, b2: Matrix[T]): tuple[accuracy, precision, recall, f1: float] =
   var tp, fp, tn, fn: array[SemeionLabels, int32]
 
+  let predictions = predict(W1, b1, W2, b2, X)
+  let trueLabels = maxIndexRows(yTrue)
+
   for i in 0..<X.m:
-    let trueLabel = maxIndexRows(yTrue[i..i, 0..^1])[0]
-    let predLabel = predict(W1, b1, W2, b2, X[i..i, 0..^1])[0]
+    let trueLabel = trueLabels[i]
+    let predLabel = predictions[i]
 
     if trueLabel == predLabel:
       inc tp[trueLabel]
