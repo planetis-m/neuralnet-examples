@@ -72,15 +72,12 @@ proc score(predictions, trueLabels: seq[int32]): tuple[accuracy, precision, reca
 
     if trueLabel == predLabel:
       inc tp[trueLabel]
-      for j in 0..<SemeionLabels:
-        if j != trueLabel:
-          inc tn[j]
     else:
       inc fp[predLabel]
       inc fn[trueLabel]
-      for j in 0..<SemeionLabels:
-        if j != trueLabel and j != predLabel:
-          inc tn[j]
+    for j in 0..<SemeionLabels:
+      if j != trueLabel and j != predLabel:
+        inc tn[j]
 
   var accuracy: float = 0
   var precision, recall, f1: array[SemeionLabels, float]
@@ -134,8 +131,7 @@ proc main =
     m = 177
     epochs = 2_000
     k = 5 # number of folds for cross-validation
-  let
-    (X, Y) = readSemeionData()
+  let (X, Y) = readSemeionData()
   # Cross Validation
   let foldSize = X.m div k
   var metrics: seq[tuple[accuracy, precision, recall, f1: float]] = @[]
