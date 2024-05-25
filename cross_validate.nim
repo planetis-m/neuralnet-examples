@@ -114,7 +114,7 @@ proc score(predictions, trueLabels: seq[int32]): tuple[accuracy, precision, reca
 
 type
   KFoldCrossValidation = object
-    K: int
+    K: int = 5
     indices: seq[int16]
 
 proc newKFoldCrossValidation(numInstances, numFolds: int): KFoldCrossValidation =
@@ -128,7 +128,7 @@ proc getTrainFold[T](x: KFoldCrossValidation, fold: int, X, Y: Matrix[T]): (Matr
   var rows: seq[int16] = @[]
   let
     dataLen = x.indices.len
-    foldLen = if x.K != 0: dataLen div x.K else: 0
+    foldLen = dataLen div x.K
     first = fold * foldLen
     last = min(first + foldLen, dataLen)
   for i in 0..<first:
@@ -141,7 +141,7 @@ proc getTestFold[T](x: KFoldCrossValidation, fold: int, X, Y: Matrix[T]): (Matri
   var rows: seq[int16] = @[]
   let
     dataLen = x.indices.len
-    foldLen = if x.K != 0: dataLen div x.K else: 0
+    foldLen = dataLen div x.K
     first = fold * foldLen
     last = min(first + foldLen, dataLen)
   for i in first..<last:
