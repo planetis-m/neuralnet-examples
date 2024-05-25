@@ -114,12 +114,14 @@ proc score(predictions, trueLabels: seq[int32]): tuple[accuracy, precision, reca
 
 type
   KFoldCrossValidation = object
-    K: int = 5
+    K: int
     indices: seq[int16]
 
-proc newKFoldCrossValidation(numInstances, numFolds: int): KFoldCrossValidation =
-  result = KFoldCrossValidation(K: numFolds)
-  result.indices = newSeq[int16](numInstances)
+proc newKFoldCrossValidation(numInstances: int; numFolds = 5.Natural): KFoldCrossValidation =
+  result = KFoldCrossValidation(
+    K: numFolds,
+    indices: newSeq[int16](numInstances)
+  )
   for i in 0..<numInstances:
     result.indices[i] = i.int16
   shuffle(result.indices)
