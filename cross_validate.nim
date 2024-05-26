@@ -126,7 +126,7 @@ proc newKFoldCrossValidation(numInstances: int; numFolds = 5.Natural): KFoldCros
     result.indices[i] = i.int16
   shuffle(result.indices)
 
-proc getTrainFold[T](x: KFoldCrossValidation, fold: int, X, Y: Matrix[T]): (Matrix[T], Matrix[T]) =
+proc getTrainFold[T](x: KFoldCrossValidation, X, Y: Matrix[T], fold: int): (Matrix[T], Matrix[T]) =
   var rows: seq[int16] = @[]
   let
     dataLen = x.indices.len
@@ -139,7 +139,7 @@ proc getTrainFold[T](x: KFoldCrossValidation, fold: int, X, Y: Matrix[T]): (Matr
     rows.add(x.indices[i])
   result = (X[rows, 0..^1], Y[rows, 0..^1])
 
-proc getTestFold[T](x: KFoldCrossValidation, fold: int, X, Y: Matrix[T]): (Matrix[T], Matrix[T]) =
+proc getTestFold[T](x: KFoldCrossValidation, X, Y: Matrix[T], fold: int): (Matrix[T], Matrix[T]) =
   var rows: seq[int16] = @[]
   let
     dataLen = x.indices.len
@@ -166,8 +166,8 @@ proc main =
   var metrics: seq[tuple[accuracy, precision, recall, f1: float]] = @[]
   for fold in 0..<k:
     let
-      (testX, testY) = cv.getTestFold(fold, X, Y)
-      (trainX, trainY) = cv.getTrainFold(fold, X, Y)
+      (testX, testY) = cv.getTestFold(X, Y, fold)
+      (trainX, trainY) = cv.getTrainFold(X, Y, fold)
     var
       # Layer 1
       W1 = randNMatrix(trainX.n, nodes, 0.0, sqrt(2 / trainX.n))
@@ -179,7 +179,7 @@ proc main =
       cache = (zerosLike(W1), zerosLike(b1), zerosLike(W2), zerosLike(b2))
     for i in 1 .. epochs:
       var loss = 0.0
-      for (X, Y) in batches(trainX, trainY, trainX.m, m):
+      for (X, Y) in batches(trainX, trainY, trainX.m, min(m, trainX.m)):
         # Foward Prop
         let
           # Layer 1
