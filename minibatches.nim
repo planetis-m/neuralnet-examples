@@ -64,7 +64,7 @@ iterator batches[T](X, Y: Matrix[T], len, batchLen: int): (Matrix[T], Matrix[T])
 
 proc main =
   const
-    nodes = 28
+    nodes = 51
     rate = 0.01
     beta = 0.9 # decay rate
     epsilon = 1e-8 # avoid division by zero

@@ -51,7 +51,7 @@ The data set used is [semeion.data](http://archive.ics.uci.edu/ml/machine-learni
 
 ```json
 {
-   "layers": [256, 336, 10],
+   "layers": [256, 51, 10],
    "activation_function": ["sigmoid", "softmax"]
 }
 ```
@@ -64,7 +64,7 @@ instead of SGD.
 
 ```json
 {
-   "layers": [256, 28, 10],
+   "layers": [256, 51, 10],
    "activation_function": ["sigmoid", "softmax"]
 }
 ```

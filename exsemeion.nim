@@ -60,13 +60,13 @@ template zerosLike[T](a: Matrix[T]): Matrix[T] = matrix[T](a.m, a.n)
 
 proc main =
   const
-    nodes = 336
+    nodes = 51 # heuristic: square root of the product of the input and output sizes
     rate = 0.0006
     term = 0.6
     epochs = 2_000
   let
     (X, Y) = readSemeionData()
-    sample = X[0..0, 0..^1]
+    sample = X[635..639, 0..^1]
   var
     # Layer 1
     W1 = randNMatrix(X.n, nodes, 0.0, sqrt(2.0 / float(X.n + nodes)))
@@ -112,6 +112,6 @@ proc main =
     if i mod 500 == 0:
       echo(" Iteration ", i, ":")
       echo("   Loss = ", formatEng(loss))
-      echo("   Prediction =\n", predict(W1, b1, W2, b2, sample))
+      echo("   Prediction = ", predict(W1, b1, W2, b2, sample))
 
 main()

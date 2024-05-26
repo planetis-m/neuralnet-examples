@@ -153,7 +153,7 @@ proc getTestFold[T](x: KFoldCrossValidation, X, Y: Matrix[T], fold: int): (Matri
 proc main =
   # randomize(123)
   const
-    nodes = 51 # heuristic: square root of the product of the input and output sizes
+    nodes = 51
     rate = 0.01
     beta = 0.9 # decay rate
     epsilon = 1e-8 # avoid division by zero
@@ -179,7 +179,7 @@ proc main =
       cache = (zerosLike(W1), zerosLike(b1), zerosLike(W2), zerosLike(b2))
     for i in 1 .. epochs:
       var loss = 0.0
-      for (X, Y) in batches(trainX, trainY, trainX.m, min(m, trainX.m)):
+      for (X, Y) in batches(trainX, trainY, trainX.m, m):
         # Foward Prop
         let
           # Layer 1
