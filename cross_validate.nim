@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Antonis Geralis
+# Copyright (c) 2024 Antonis Geralis
 import std/[parsecsv, strutils, random, math], manu/matrix
 {.passC: "-march=native -ffast-math".}
 
@@ -153,7 +153,7 @@ proc getTestFold[T](x: KFoldCrossValidation, fold: int, X, Y: Matrix[T]): (Matri
 proc main =
   # randomize(123)
   const
-    nodes = 28
+    nodes = 51 # heuristic: square root of the product of the input and output sizes
     rate = 0.01
     beta = 0.9 # decay rate
     epsilon = 1e-8 # avoid division by zero

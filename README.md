@@ -64,7 +64,7 @@ instead of SGD.
 
 ```json
 {
-   "layers": [256, 336, 10],
+   "layers": [256, 28, 10],
    "activation_function": ["sigmoid", "softmax"]
 }
 ```
@@ -73,6 +73,13 @@ instead of SGD.
 
 Same as the previous, but with cross validation. Implements accuracy,
 precision, recall and f1-score metrics.
+
+```json
+{
+   "layers": [256, 51, 10],
+   "activation_function": ["sigmoid", "softmax"]
+}
+```
 
 **DISCLAIMER**: Only for learning purposes. Nim has its own machine learning
 framework [Arraymancer](https://github.com/mratsim/Arraymancer) as well as
