@@ -29,6 +29,14 @@ proc sigmoid(s: float): float {.inline.} =
   result = 1.0 / (1.0 + exp(-s))
 makeUniversal(sigmoid)
 
+proc leaky_relu(s: float; a = 0.01): float {.inline.} =
+  result = s * float(s > 0) + a * s * float(s <= 0)
+makeUniversal(leaky_relu)
+
+proc leaky_relu_deriv(x: float; a = 0.01): float {.inline.} =
+  result = float(x > 0) + a * float(x <= 0)
+makeUniversal(leaky_relu_deriv)
+
 proc maxIndexRows[T](m: Matrix[T]): seq[int32] =
   result = newSeq[int32](m.m)
   for i in 0 ..< m.m:
@@ -42,7 +50,7 @@ proc predict[T](W1, b1, W2, b2, X: Matrix[T]): seq[int32] =
   let
     # Layer 1
     Z1 = X * W1 + RowVector[T](b1)
-    A1 = sigmoid(Z1)
+    A1 = leaky_relu(Z1)
     # Layer 2
     Z2 = A1 * W2 + RowVector[T](b2)
     A2 = exp(Z2) /. ColVector[T](sumRows(exp(Z2)))
@@ -68,6 +76,7 @@ proc main =
     rate = 0.01
     beta = 0.9 # decay rate
     epsilon = 1e-8 # avoid division by zero
+    alpha = 0.0001 # L2 regularization strength
     m = 177
     epochs = 2_000
   let
@@ -89,7 +98,7 @@ proc main =
       let
         # Layer 1
         Z1 = X * W1 + RowVector64(b1)
-        A1 = sigmoid(Z1)
+        A1 = leaky_relu(Z1)
         # Layer 2
         Z2 = A1 * W2 + RowVector64(b2)
         A2 = exp(Z2) /. ColVector64(sumRows(exp(Z2))) # softmax
@@ -97,13 +106,13 @@ proc main =
         # Layer 2
         dZ2 = A2 - Y
         db2 = sumColumns(dZ2)
-        dW2 = A1.transpose * dZ2
+        dW2 = A1.transpose * dZ2 + (alpha / m) * W2 # L2 regularization
         # Layer 1
-        dZ1 = (dZ2 * W2.transpose) *. (1.0 - A1) *. A1
+        dZ1 = (dZ2 * W2.transpose) *. leaky_relu_deriv(A1)
         db1 = sumColumns(dZ1)
-        dW1 = X.transpose * dZ1
+        dW1 = X.transpose * dZ1 + (alpha / m) * W1 # L2 regularization
       # Cross Entropy
-      loss = -sum(ln(A2) *. Y)
+      loss += -sum(ln(A2) *. Y) / m + alpha / (2 * m) * (sum(W1 *. W1) + sum(W2 *. W2))
       # RMSProp updates
       cache[0] = beta * cache[0] + (1.0 - beta) * (dW1 *. dW1)
       cache[1] = beta * cache[1] + (1.0 - beta) * (db1 *. db1)

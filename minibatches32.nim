@@ -29,6 +29,10 @@ proc sigmoid(s: float32): float32 {.inline.} =
   result = 1'f32 / (1'f32 + exp(-s))
 makeUniversal(sigmoid)
 
+proc tmp_func(s: float32): float32 {.inline.} =
+  result = s * (1'f32 - s)
+makeUniversal(tmp_func)
+
 proc maxIndexRows[T](m: Matrix[T]): seq[int32] =
   result = newSeq[int32](m.m)
   for i in 0 ..< m.m:
@@ -68,7 +72,6 @@ proc main =
     rate: float32 = 0.001
     beta: float32 = 0.9 # decay rate
     epsilon: float32 = 1e-8 # avoid division by zero
-    clipValue: float32 = 5.0 # gradient clipping value
     alpha: float32 = 0.0001 # L2 regularization strength
     m = 177
     epochs = 2_000
@@ -99,11 +102,11 @@ proc main =
         # Layer 2
         dZ2 = A2 - Y
         db2 = sumColumns(dZ2)
-        dW2 = A1.transpose * dZ2 + alpha * W2 / m.float32 # L2 regularization
+        dW2 = A1.transpose * dZ2 + (alpha / m.float32) * W2 # L2 regularization
         # Layer 1
         dZ1 = (dZ2 * W2.transpose) *. (1'f32 - A1) *. A1
         db1 = sumColumns(dZ1)
-        dW1 = X.transpose * dZ1 + alpha * W1 / m.float32 # L2 regularization
+        dW1 = X.transpose * dZ1 + (alpha / m.float32) * W1 # L2 regularization
       # Cross Entropy with L2 Regularization
       loss += -sum(ln(A2) *. Y) / m.float32 + alpha / (2 * m.float32) * (sum(W1 *. W1) + sum(W2 *. W2))
       # RMSProp updates
