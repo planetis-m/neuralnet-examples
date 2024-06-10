@@ -29,6 +29,14 @@ proc sigmoid(s: float): float {.inline.} =
   result = 1.0 / (1.0 + exp(-s))
 makeUniversal(sigmoid)
 
+proc maxRows[T](m: Matrix[T]): Matrix[T] =
+  result = matrixUninit[T](m.m, 1)
+  for i in 0 ..< m.m:
+    var tmp = T(0)
+    for j in 1 ..< m.n:
+      if m[i, j] > tmp: tmp = m[i, j]
+    result[i, 0] = tmp
+
 proc maxIndexRows[T](m: Matrix[T]): seq[int32] =
   result = newSeq[int32](m.m)
   for i in 0 ..< m.m:
@@ -45,7 +53,8 @@ proc predict[T](W1, b1, W2, b2, X: Matrix[T]): seq[int32] =
     A1 = sigmoid(Z1)
     # Layer 2
     Z2 = A1 * W2 + RowVector[T](b2)
-    A2 = exp(Z2) /. ColVector[T](sumRows(exp(Z2)))
+    Z2_stable = Z2 - RowVector[T](maxRows(Z2))
+    A2 = exp(Z2_stable) /. ColVector[T](sumRows(exp(Z2_stable)))
   result = maxIndexRows(A2)
 
 template zerosLike[T](a: Matrix[T]): Matrix[T] = matrix[T](a.m, a.n)
@@ -187,7 +196,8 @@ proc main =
           A1 = sigmoid(Z1)
           # Layer 2
           Z2 = A1 * W2 + RowVector64(b2)
-          A2 = exp(Z2) /. ColVector64(sumRows(exp(Z2))) # softmax
+          Z2_stable = Z2 - RowVector64(maxRows(Z2))
+          A2 = exp(Z2_stable) /. ColVector64(sumRows(exp(Z2_stable))) # softmax
           # Back Prop
           # Layer 2
           dZ2 = A2 - Y
