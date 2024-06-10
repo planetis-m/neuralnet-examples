@@ -32,9 +32,9 @@ makeUniversal(sigmoid)
 proc maxRows[T](m: Matrix[T]): Matrix[T] =
   result = matrixUninit[T](m.m, 1)
   for i in 0 ..< m.m:
-    var tmp = T(0)
+    var tmp = m[i, 0]
     for j in 1 ..< m.n:
-      if m[i, j] > tmp: tmp = m[i, j]
+      tmp = max(tmp, m[i, j])
     result[i, 0] = tmp
 
 proc maxIndexRows[T](m: Matrix[T]): seq[int32] =
@@ -53,7 +53,7 @@ proc predict[T](W1, b1, W2, b2, X: Matrix[T]): seq[int32] =
     A1 = sigmoid(Z1)
     # Layer 2
     Z2 = A1 * W2 + RowVector[T](b2)
-    Z2_stable = Z2 - RowVector[T](maxRows(Z2))
+    Z2_stable = Z2 - ColVector[T](maxRows(Z2))
     A2 = exp(Z2_stable) /. ColVector[T](sumRows(exp(Z2_stable)))
   result = maxIndexRows(A2)
 
@@ -196,8 +196,8 @@ proc main =
           A1 = sigmoid(Z1)
           # Layer 2
           Z2 = A1 * W2 + RowVector64(b2)
-          Z2_stable = Z2 - RowVector64(maxRows(Z2))
-          A2 = exp(Z2_stable) /. ColVector64(sumRows(exp(Z2_stable))) # softmax
+          Z2_stable = Z2 - ColVector64(maxRows(Z2))
+          A2 = exp(Z2_stable) /. ColVector64(sumRows(exp(Z2_stable))) # stable softmax
           # Back Prop
           # Layer 2
           dZ2 = A2 - Y

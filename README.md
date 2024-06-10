@@ -60,7 +60,7 @@ The data set used is [semeion.data](http://archive.ics.uci.edu/ml/machine-learni
 
 Same as the previous, data is split in small batches (subsets). Impoves memory
 efficiency, accuracy for a trade-off in compute efficiency. Uses root mean squared propagation,
-instead of SGD. And L2 regularization for the model's weights.
+instead of SGD. And L2 regularization is applied for the model's weights.
 
 ```json
 {
